@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # MySQL 설정
-app.config['MYSQL_HOST'] = 'db-svc'
+app.config['MYSQL_HOST'] = 'mydb.inter.local'
 app.config['MYSQL_USER'] = 'frodo'
 app.config['MYSQL_PASSWORD'] = 'frodo5020!!'
 app.config['MYSQL_DB'] = 'frodo'
