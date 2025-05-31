@@ -2,13 +2,14 @@ from flask import Flask, request, render_template, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_session import Session
 import socket
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # MySQL 설정
-app.config['MYSQL_HOST'] = 'mydb.inter.local'
+app.config['MYSQL_HOST'] = 'db-svc'
 app.config['MYSQL_USER'] = 'frodo'
 app.config['MYSQL_PASSWORD'] = 'frodo5020!!'
 app.config['MYSQL_DB'] = 'frodo'
@@ -44,7 +45,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(password)  # 기본 방법 사용
         cursor = mysql.connection.cursor()
         cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
         mysql.connection.commit()
@@ -75,8 +76,18 @@ def dashboard():
     server_ip = socket.gethostbyname(server_name)
     xff = request.headers.get('X-Forwarded-For', 'Not Available')
     
-    return render_template('dashboard.html',
-                           current_user=current_user,
-                           client_ip=client_ip,
-                           server_name=server_name,
-                           server_ip=server_ip,
+    return render_template('dashboard.html', current_user=current_user, client_ip=client_ip, server_name=server_name, server_ip=server_ip, xff=xff)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/healthz')
+def health_check():
+    return "OK", 200
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
