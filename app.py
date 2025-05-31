@@ -2,23 +2,13 @@ from flask import Flask, request, render_template, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_session import Session
 import socket
-import redis
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# 세션을 Redis에 저장
-app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_REDIS'] = redis.StrictRedis(host='redis-svc', port=6379)  # Redis 컨테이너의 IP 주소를 사용합니다.
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_KEY_PREFIX'] = 'session:'
-Session(app)
-
 # MySQL 설정
-app.config['MYSQL_HOST'] = 'db-svc'
+app.config['MYSQL_HOST'] = 'mydb.inter.local'
 app.config['MYSQL_USER'] = 'frodo'
 app.config['MYSQL_PASSWORD'] = 'frodo5020!!'
 app.config['MYSQL_DB'] = 'frodo'
@@ -54,7 +44,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_password = generate_password_hash(password)  # 기본 방법 사용
+        hashed_password = generate_password_hash(password)
         cursor = mysql.connection.cursor()
         cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
         mysql.connection.commit()
@@ -85,18 +75,8 @@ def dashboard():
     server_ip = socket.gethostbyname(server_name)
     xff = request.headers.get('X-Forwarded-For', 'Not Available')
     
-    return render_template('dashboard.html', current_user=current_user, client_ip=client_ip, server_name=server_name, server_ip=server_ip, xff=xff)
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-@app.route('/healthz')
-def health_check():
-    return "OK", 200
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-
+    return render_template('dashboard.html',
+                           current_user=current_user,
+                           client_ip=client_ip,
+                           server_name=server_name,
+                           server_ip=server_ip,
