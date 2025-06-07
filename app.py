@@ -19,7 +19,7 @@ Session(app)
 # MySQL 설정
 app.config['MYSQL_HOST'] = 'DB주소'
 app.config['MYSQL_USER'] = 'frodo'
-app.config['MYSQL_PASSWORD'] = 'frodo5020!!'
+app.config['MYSQL_PASSWORD'] = 'Frodo5020!!'
 app.config['MYSQL_DB'] = 'frodo'
 
 mysql = MySQL(app)
